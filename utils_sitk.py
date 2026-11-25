@@ -162,11 +162,16 @@ def resample(img: sitk.Image, target_spacing:  list|tuple = (0.5,0.5,0.5), inter
     # calculate new size to preserve physical extent
     new_size = np.round(original_size * original_spacing / new_spacing).astype(int).tolist()
 
+    # origin is the center of the first voxel: move it so the new grid starts at the same edge as the old one
+    # (keeping the origin would shift everything by (new - old) / 2, e.g. masks 1 voxel off after resampling back)
+    direction  = np.array(img.GetDirection()).reshape(3, 3)
+    new_origin = np.array(img.GetOrigin()) + direction @ ((new_spacing - original_spacing) / 2)
+
     resample = sitk.ResampleImageFilter()
     resample.SetOutputSpacing(new_spacing.tolist())
     resample.SetSize(new_size)
     resample.SetOutputDirection(img.GetDirection())
-    resample.SetOutputOrigin(img.GetOrigin())
+    resample.SetOutputOrigin(new_origin.tolist())
     resample.SetTransform(sitk.Transform())
     resample.SetInterpolator(interpolator)
 
@@ -232,6 +237,33 @@ def same_geometry(a: sitk.Image, b: sitk.Image, tol: float = 1e-3) -> bool:
             np.allclose(a.GetSpacing(),   b.GetSpacing(),   atol=tol) and
             np.allclose(a.GetOrigin(),    b.GetOrigin(),    atol=tol) and
             np.allclose(a.GetDirection(), b.GetDirection(), atol=tol))
+
+
+def validate_mask(image: sitk.Image, mask: sitk.Image) -> np.ndarray:
+    """Check a mask can be attached to image; returns its label values, raises ValueError with a user message.
+    Geometry (spacing / origin / direction) is not checked here, see same_geometry."""
+    if mask.GetSize() != image.GetSize():
+        raise ValueError(f"Mask size {mask.GetSize()} does not match image size {image.GetSize()}.\n"
+                         f"The mask was not imported.")
+    if mask.GetNumberOfComponentsPerPixel() != 1:
+        raise ValueError("The mask must be a single-channel image.")
+
+    # masks hold integer labels 0-255
+    values = np.unique(sitk.GetArrayViewFromImage(mask))
+    if np.any(values < 0) or np.any(values > 255) or np.any(values != np.round(values)):
+        raise ValueError("The mask must contain integer label values between 0 and 255.")
+    return values
+
+
+def mask_labels(values, palette: list) -> list:
+    """Per-label names / colors for a mask with several labels, None for a binary mask"""
+    fg_values = [int(v) for v in values if v != 0]
+    if len(fg_values) <= 1:
+        return None
+    return [
+        {'value': v, 'name': f"Label {v}", 'color': list(palette[i % len(palette)])}
+        for i, v in enumerate(fg_values)
+    ]
 
 
 def check_metadata(img: sitk.Image):

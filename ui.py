@@ -229,16 +229,10 @@ class MainWindow(QMainWindow):
             image = image_item.data(0, Qt.UserRole)
             mask  = sitk.ReadImage(file_path)
 
-            if mask.GetSize() != image.GetSize():
-                QMessageBox.warning(
-                    self, "Warning",
-                    f"Mask size {mask.GetSize()} does not match image size {image.GetSize()}.\n"
-                    f"The mask was not imported."
-                )
-                return
-
-            if mask.GetNumberOfComponentsPerPixel() != 1:
-                QMessageBox.warning(self, "Warning", "The mask must be a single-channel image.")
+            try:
+                values = utils_sitk.validate_mask(image, mask)
+            except ValueError as e:
+                QMessageBox.warning(self, "Warning", str(e))
                 return
 
             # same size but different spacing / origin / direction -> overlay would be misaligned
@@ -252,22 +246,11 @@ class MainWindow(QMainWindow):
                     return
                 mask.CopyInformation(image)
 
-            # masks hold integer labels 0-255
-            values = np.unique(sitk.GetArrayViewFromImage(mask))
-            if np.any(values < 0) or np.any(values > 255) or np.any(values != np.round(values)):
-                QMessageBox.warning(self, "Warning", "The mask must contain integer label values between 0 and 255.")
-                return
             mask = sitk.Cast(mask, sitk.sitkUInt8)
 
             # several labels -> give each its own color
-            fg_values = [int(v) for v in values if v != 0]
-            labels = None
-            if len(fg_values) > 1:
-                palette = self.config.get('label_palette', [[255,255,0],[255,0,255],[0,255,0],[255,128,0],[0,128,255],[255,0,0]])
-                labels  = [
-                    {'value': v, 'name': f"Label {v}", 'color': list(palette[i % len(palette)])}
-                    for i, v in enumerate(fg_values)
-                ]
+            palette = self.config.get('label_palette', [[255,255,0],[255,0,255],[0,255,0],[255,128,0],[0,128,255],[255,0,0]])
+            labels  = utils_sitk.mask_labels(values, palette)
 
             name = utils_sitk.strip_image_ext(Path(file_path).name) # already shown under its image
             self.LeftPanel.add_mask_child(image_item, name, mask, labels)
