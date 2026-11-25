@@ -81,6 +81,21 @@ python ui.py
 3. Select one or more images in the left panel and click **Run Prediction**.
 4. The predicted mask appears under its image. Select it and use **File → Export Result** to save it.
 
+## Running the tests
+
+```bash
+pytest                # fast unit tests, synthetic data only (about 10 s, no model weights needed)
+pytest -m slow        # also load every model in config.yaml with the real weights in checkpoints/
+```
+
+The tests in `tests/` cover:
+- reading DICOM series, naming images, resampling and reorientation (`utils_sitk.py`)
+- checks for imported masks
+- the PyTorch and nnU-Net prediction pipelines, using tiny stand-in networks
+- the display pipeline and the image list
+
+The tests create Qt widgets off-screen, so no window opens and they also run without a display. They use only synthetic images, so never add patient scans to `tests/`.
+
 ## Building the Windows executable
 
 ```bash

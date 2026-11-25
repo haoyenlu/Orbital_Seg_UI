@@ -17,3 +17,7 @@ tqdm==4.67.1
 
 # only needed to build the executable
 pyinstaller==6.16.0
+
+# only needed to run the tests
+pytest==9.2.0
+pytest-qt==4.5.0
