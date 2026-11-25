@@ -29,8 +29,8 @@ Developed at the Beyond Vision Laboratory, University of Pittsburgh, for the Ped
 Requires Python 3.10 and Windows or Linux. An NVIDIA GPU is recommended; the models also run on the CPU, but slowly.
 
 ```bash
-git clone https://github.com/<owner>/SegUI.git
-cd SegUI
+git clone https://github.com/haoyenlu/Orbital_Seg_UI.git
+cd Orbital_Seg_UI
 python -m venv venv
 venv\Scripts\activate            # Linux: source venv/bin/activate
 
