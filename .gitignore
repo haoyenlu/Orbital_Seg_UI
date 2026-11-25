@@ -1,0 +1,32 @@
+# ---- Patient data: never commit (CT images, masks, DICOM, predictions) ----
+*.nii
+*.nii.gz
+*.mhd
+*.raw
+*.nrrd
+*.dcm
+*.DCM
+*.gif
+abscess_pred/
+test/
+data/
+
+# ---- Model weights: trained on patient data, distributed separately ----
+checkpoints/
+*.pth
+*.pt
+*.h5
+*.onnx
+
+# ---- Notebooks: outputs / paths can contain patient images and study IDs ----
+*.ipynb
+.ipynb_checkpoints/
+
+# ---- Build / environment ----
+build/
+dist/
+venv*/
+__pycache__/
+*.pyc
+SegUI.log
+environment.yaml

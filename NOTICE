@@ -1,0 +1,36 @@
+SegUI
+Copyright 2026 Beyond Vision Laboratory, University of Pittsburgh
+
+This product includes software developed at the Beyond Vision Laboratory,
+University of Pittsburgh, supported by NIH grant R01 EY033973.
+
+-------------------------------------------------------------------------------
+Third-party code
+-------------------------------------------------------------------------------
+
+nnunet_infer.py re-implements the PlainConvUNet network and the inference
+procedure (CT normalization, sliding-window prediction with Gaussian weighting
+and mirroring, fold ensembling) of nnU-Net v2 so that nnU-Net checkpoints can
+be loaded without installing nnU-Net. Module names follow
+dynamic_network_architectures so checkpoints load unchanged.
+
+  nnU-Net                       https://github.com/MIC-DKFZ/nnUNet
+  dynamic_network_architectures https://github.com/MIC-DKFZ/dynamic-network-architectures
+  Copyright German Cancer Research Center (DKFZ), Division of Medical Image Computing
+  Licensed under the Apache License, Version 2.0
+
+  Isensee, F., Jaeger, P. F., Kohl, S. A., Petersen, J., & Maier-Hein, K. H. (2021).
+  nnU-Net: a self-configuring method for deep learning-based biomedical image
+  segmentation. Nature Methods, 18(2), 203-211.
+
+-------------------------------------------------------------------------------
+Third-party libraries (not included in this repository)
+-------------------------------------------------------------------------------
+
+The source code in this repository is licensed under the Apache License 2.0.
+It uses PyQt5, which is licensed under the GNU GPL v3 (or a commercial license
+from Riverbank Computing). Binary builds (SegUI.exe) bundle PyQt5 and are
+therefore distributed under the terms of the GNU GPL v3.
+
+Other dependencies (PyTorch, TensorFlow, MONAI, SimpleITK, pydicom, NumPy,
+SciPy, scikit-image) are distributed under their own permissive licenses.

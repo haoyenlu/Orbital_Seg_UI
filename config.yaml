@@ -1,0 +1,135 @@
+UI:
+  title: 'Pediatric orbital project (R01 EY033973)'
+
+
+about:
+  app_name: 'Pediatric orbital project (R01 EY033973)'
+  version: '1.0.0'
+  website: 'https://www.pu-lab.com/'
+  description: 'Beyond Vision Labratory, University of Pittsburgh, jip13@pitt.edu'
+
+models:
+  R2_abscess:
+    type: 'keras'
+    function: 'Abscess'
+    checkpoint: "checkpoints/033--0.6830-V1-0.5.h5"
+    class: "vSegnets.R2UNet"
+    roi_size: [96,96,96]
+    spacing:  [0.5,0.5,0.5]
+    stride:   [48,48,48]
+    clip_range: [-1000,1000]
+    normalize: false
+    n_classes: 2
+    target_class: 1
+    params: 
+      n_classes: 2
+      n_filters: [32,64,128,256,512]
+      dropout_rate: 0
+      input_shape: [96,96,96]
+
+
+  R2_fat:
+    name: 'R2'
+    type: 'pytorch'
+    function: 'Fat'
+    checkpoint: 'checkpoints/fat_nerve_r2_new_model.pth'
+    n_classes: 3
+    target_class: 2
+    roi_size: [32,32,32]
+    spacing: [1.0,1.0,1.0]
+    clip_range: [-1024,1024]
+    normalize: true
+    params:
+      channels: [16,32,64,128,256]
+      t: 2
+  
+  R2_nerve:
+    name: 'R2'
+    type: 'pytorch'
+    function: 'Nerve'
+    checkpoint: 'checkpoints/fat_nerve_r2_new_model.pth'
+    n_classes: 3
+    target_class: 1
+    roi_size: [32,32,32]
+    spacing: [1.0,1.0,1.0]
+    clip_range: [-1024,1024]
+    normalize: true
+    params:
+      channels: [16,32,64,128,256]
+      t: 2
+
+  R2_fat_nerve:
+    name: 'R2'
+    type: 'pytorch'
+    function: 'Fat & Nerve'
+    checkpoint: 'checkpoints/fat_nerve_r2_new_model.pth'
+    n_classes: 3
+    roi_size: [32,32,32]
+    spacing: [1.0,1.0,1.0]
+    clip_range: [-1024,1024]
+    normalize: true
+    labels:             # multi-label output: value -> name / display color
+      1: {name: 'Nerve', color: [255,255,0]}
+      2: {name: 'Fat',   color: [255,0,255]}
+    params:
+      channels: [16,32,64,128,256]
+      t: 2
+
+  nnUNet_fat_nerve:
+    type: 'nnunet'
+    function: 'nnUNet Fat & Nerve'
+    checkpoint: 'checkpoints/nnUNetTrainer_100epochs__nnUNetPlans__3d_fullres' # nnU-Net results folder
+    folds: [0,1,2,3,4]                  # ensemble: logits averaged over these folds
+    checkpoint_name: 'checkpoint_final.pth'
+    use_mirroring: true                 # nnU-Net test-time mirroring (8x slower, slightly better)
+    step_size: 0.5                      # sliding window step as fraction of the patch size
+    labels:                             # values from dataset.json
+      1: {name: 'Nerve', color: [255,255,0]}
+      2: {name: 'Fat',   color: [255,0,255]}
+
+
+  Unet:
+    type: 'keras'
+    function: 'Orbit Conal'
+    checkpoint: 'checkpoints/Orbitconal-1.7414.h5'
+    roi_size: [96,96,96]
+    stride:   [48,48,48]
+    spacing:  [0.5,0.5,0.5]
+    clip_range: [-1000,1000]
+    normalize: false
+    n_classes: 2
+    target_class: 1
+
+
+windows:
+  "None (Original Image)": null
+  "Brain (40,80)": [40,80]
+  "Bone (400,1800)": [400,1800]
+  "Lung (-600,1500)": [-600,1500]
+  "Soft Tissue (50,400)": [50,400]
+  "Liver (50,150)": [50,150]
+  "Mediastinum (50,350)": [50,350]
+
+axis:
+  "Axial": 0
+  "Coronal": 1
+  "Sagittal": 2
+
+
+label_palette:   # colors for imported masks with more than one label
+  - [255,255,0]
+  - [255,0,255]
+  - [0,255,0]
+  - [255,128,0]
+  - [0,128,255]
+  - [255,0,0]
+
+
+display:
+  mask_color: [0,255,255]
+  mask_alpha: 100
+  contour_width: 1.0
+  overlay: true
+  contour: false
+  axis: 0
+  window: null
